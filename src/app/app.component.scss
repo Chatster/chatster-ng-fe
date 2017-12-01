@@ -1,0 +1,41 @@
+.message-compose {
+    padding: .5rem;
+    width: 100%;
+    textarea {
+        resize: none;
+    }
+}
+
+.message-send {
+    padding: 1rem;
+}
+
+.container-fluid {
+    height: 100%;
+
+    .toolbar {
+        position: fixed;
+        width: 100%;
+        left: 0;
+        top: 0;
+
+        .app-name {
+            color: #fff;    
+        }
+        .app-name:hover{
+            color: #bfbfbf;    
+            cursor: pointer;
+        }
+        .joined-room {
+            color: #FF9100;
+            margin-left: .5rem;
+            &:hover {
+                cursor: default;
+                user-select: none;
+            }
+        }
+    }
+    .content {
+        margin-top: 5rem;
+    }
+}
