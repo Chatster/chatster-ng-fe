@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
+import { RoomModule } from '../room/room.module';
 import { MaterialModule } from '../material.module';
 
 import { HomeComponent } from './home.component';
@@ -10,7 +11,9 @@ import { HomeComponent } from './home.component';
     imports: [
         FormsModule,
         CommonModule,
-        MaterialModule
+
+        RoomModule,
+        MaterialModule,
     ],
     declarations: [HomeComponent]
 })

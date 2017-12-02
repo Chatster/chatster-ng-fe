@@ -1,42 +1,5 @@
-<div class="row" *ngIf="!canChat">
-    <div class="col-2">
-        <mat-form-field class="example-full-width">
-            <input matInput [(ngModel)]="username" placeholder="Username">
-        </mat-form-field>
-    </div>
-    <div class="col-2">
-        <mat-form-field class="example-full-width">
-            <input matInput [(ngModel)]="roomName" placeholder="Room">
-        </mat-form-field>
-    </div>
-    <div class="col-2">
-        <button mat-raised-button color="primary" (click)="joinRoom()">Join</button>
-    </div>
-    <div class="col-12">
-        <hr>
-    </div>
-</div>
-
 <div class="row">
-    <div class="col-12">
-        <mat-card class="example-card">
-            <mat-card-header>
-                <mat-card-title>
-                    <h2> Room chat </h2>
-                </mat-card-title>
-            </mat-card-header>
-
-            <mat-card-content>
-                <div class="chat-data" *ngFor="let data of chatDataCollection" [ngClass]="{'info': data.info}">{{data.message}}</div>
-            </mat-card-content>
-
-            <mat-card-actions *ngIf="canChat">
-                <hr>
-                <mat-form-field class="example-full-width">
-                    <input matInput placeholder="Message" [(ngModel)]="message">
-                </mat-form-field>
-                <button mat-raised-button (click)="sendMessage()">SEND</button>
-            </mat-card-actions>
-        </mat-card>
+    <div class="col-md-12 col-lg-4 room" *ngFor="let room of rooms">
+        <app-room [room]="room" (joinRoom)="joinRoom($event)"></app-room>
     </div>
 </div>

@@ -8,8 +8,9 @@ import { BrowserModule } from '@angular/platform-browser';
 import { MaterialModule } from './material.module';
 import { AppRoutingModule } from './routing.module';
 
-import { AppComponent } from './app.component';
 import { HomeModule } from './home/home.module';
+
+import { AppComponent } from './app.component';
 
 @NgModule({
     declarations: [
