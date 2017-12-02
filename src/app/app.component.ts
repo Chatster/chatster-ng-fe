@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 
 import 'rxjs/add/operator/filter';
+import 'rxjs/add/operator/takeWhile';
 
 import { Router } from '@angular/router';
 

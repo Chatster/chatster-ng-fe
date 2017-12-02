@@ -11,6 +11,7 @@ import { AppRoutingModule } from './routing.module';
 import { HomeModule } from './home/home.module';
 
 import { AppComponent } from './app.component';
+import { JoinedRoomModule } from './joined-room/joined-room.module';
 
 @NgModule({
     declarations: [
@@ -25,6 +26,7 @@ import { AppComponent } from './app.component';
         AppRoutingModule,
 
         HomeModule,
+        JoinedRoomModule
     ],
     providers: [
     ],
