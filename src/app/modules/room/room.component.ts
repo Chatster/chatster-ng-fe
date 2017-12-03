@@ -1,5 +1,5 @@
 import { EventEmitter, Input, Output, Component, OnInit } from '@angular/core';
-import { RoomDTO } from '../x-shared/dtos/Room.dto';
+import { RoomDTO } from '../../x-shared/dtos/Room.dto';
 
 @Component({
     selector: 'app-room',

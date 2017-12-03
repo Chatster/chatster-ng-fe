@@ -1,17 +1,9 @@
-.message-compose {
-    padding: .5rem;
-    width: 100%;
-    textarea {
-        resize: none;
-    }
-}
-
-.message-send {
-    padding: 1rem;
-}
-
 .container-fluid {
     height: 100%;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    position: absolute;
 
     .toolbar {
         position: fixed;
@@ -37,6 +29,9 @@
         }
     }
     .content {
-        margin-top: 5rem;
+        position: relative;
+        width: 100%;
+        height: 100%;
+        padding-top: 4.6rem;
     }
 }

@@ -5,12 +5,13 @@ import { Observable } from 'rxjs/Observable';
 
 @Injectable()
 export class HeaderBarService {
-  private _$joinedRoom: BehaviorSubject<string> = new BehaviorSubject(null);
+    private _$joinedRoom: BehaviorSubject<string> = new BehaviorSubject(null);
 
-  public get $joinedRoom(): Observable<string> {
-    return this._$joinedRoom.asObservable();
-  }
+    public get $joinedRoom(): Observable<string> {
+        return this._$joinedRoom.asObservable();
+    }
 
-  constructor() { }
-
+    public setJoinedRoom(roomName: string) {
+        this._$joinedRoom.next(roomName);
+    }
 }

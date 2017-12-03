@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import * as io from 'socket.io-client';
 
-import { RoomsListDTO } from '../x-shared/dtos/RoomsList.dto';
-import { SocketEventType } from '../x-shared/events/SocketEventType';
-import { RoomDTO } from '../x-shared/dtos/Room.dto';
-import { BaseRoom } from '../core/BaseRoom.core';
+import { RoomsListDTO } from '../../x-shared/dtos/RoomsList.dto';
+import { SocketEventType } from '../../x-shared/events/SocketEventType';
+import { RoomDTO } from '../../x-shared/dtos/Room.dto';
+import { BaseRoom } from '../../core/BaseRoom.core';
 import { Router } from '@angular/router';
 
 @Component({

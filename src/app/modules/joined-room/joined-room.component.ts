@@ -1,11 +1,13 @@
 import { ActivatedRoute } from '@angular/router';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 
-import { BaseRoom } from '../core/BaseRoom.core';
+import { BaseRoom } from '../../core/BaseRoom.core';
 
-import { SocketEventType } from '../x-shared/events/SocketEventType';
-import { RoomDTO } from '../x-shared/dtos/Room.dto';
-import { RoomJoinRequestDTO } from '../x-shared/dtos/RoomJoinRequest.dto';
+import { RoomDTO } from '../../x-shared/dtos/Room.dto';
+import { SocketEventType } from '../../x-shared/events/SocketEventType';
+import { RoomJoinRequestDTO } from '../../x-shared/dtos/RoomJoinRequest.dto';
+
+import { HeaderBarService } from '../../services/header-bar.service';
 
 @Component({
     selector: 'app-joined-room',
@@ -18,6 +20,7 @@ export class JoinedRoomComponent extends BaseRoom implements OnInit, OnDestroy {
 
     constructor(
         private route: ActivatedRoute,
+        private headerBarService: HeaderBarService,
     ) {
         super();
         this.route.params
@@ -34,13 +37,14 @@ export class JoinedRoomComponent extends BaseRoom implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.isAlive = false;
+        this.headerBarService.setJoinedRoom(null);
         this.disconnectFromSocket();
     }
 
     //  Base class implementation
     protected onConnectionEstablished(): void {
         this.socket.on(SocketEventType.room.roomData, (data: RoomDTO) => {
-            console.log(data);
+            this.headerBarService.setJoinedRoom(data.name);
         });
     }
 

@@ -13,6 +13,7 @@ import { HeaderBarService } from './services/header-bar.service';
 })
 export class AppComponent implements OnInit {
     public isAlive = true;
+    public joinedRoomName: string;
 
     public constructor(
         private router: Router,
@@ -20,7 +21,9 @@ export class AppComponent implements OnInit {
     ) { }
 
     ngOnInit() {
-
+        this.headerBarService.$joinedRoom
+            .takeWhile(() => this.isAlive)
+            .subscribe(roomName => this.joinedRoomName = roomName);
     }
 
     public goHome() {

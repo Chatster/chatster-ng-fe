@@ -8,10 +8,11 @@ import { BrowserModule } from '@angular/platform-browser';
 import { MaterialModule } from './material.module';
 import { AppRoutingModule } from './routing.module';
 
-import { HomeModule } from './home/home.module';
+import { HomeModule } from './modules/home/home.module';
+import { JoinedRoomModule } from './modules/joined-room/joined-room.module';
 
 import { AppComponent } from './app.component';
-import { JoinedRoomModule } from './joined-room/joined-room.module';
+
 import { HeaderBarService } from './services/header-bar.service';
 
 @NgModule({

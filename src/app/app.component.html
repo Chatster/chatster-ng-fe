@@ -3,6 +3,7 @@
         <mat-toolbar color="primary">
             <mat-toolbar-row>
                 <span (click)="goHome()" class="app-name">Chatster </span>
+                <span *ngIf="joinedRoomName" class="joined-room">Joined {{joinedRoomName}} </span>
             </mat-toolbar-row>
         </mat-toolbar>
     </div>
