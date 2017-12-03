@@ -39,7 +39,7 @@ export class JoinedRoomComponent extends BaseRoom implements OnInit, OnDestroy {
 
     //  Base class implementation
     protected onConnectionEstablished(): void {
-        this.socket.on(SocketEventType.room.roomData, (data: Room) => {
+        this.socket.on(SocketEventType.room.roomData, (data: RoomDTO) => {
             console.log(data);
         });
     }

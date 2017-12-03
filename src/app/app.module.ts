@@ -12,6 +12,7 @@ import { HomeModule } from './home/home.module';
 
 import { AppComponent } from './app.component';
 import { JoinedRoomModule } from './joined-room/joined-room.module';
+import { HeaderBarService } from './services/header-bar.service';
 
 @NgModule({
     declarations: [
@@ -29,6 +30,7 @@ import { JoinedRoomModule } from './joined-room/joined-room.module';
         JoinedRoomModule
     ],
     providers: [
+        HeaderBarService
     ],
     bootstrap: [AppComponent]
 })
