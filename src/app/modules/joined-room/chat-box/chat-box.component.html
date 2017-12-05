@@ -1,5 +1,5 @@
 <div class="wrapper">
-    <div class="messages-box">
+    <div class="messages-box" #messagesBox>
         <mat-card class="message" *ngFor="let message of messages" [ngClass]="{'is-from-me': message.fromMe}">
             <mat-card-header class="sender-info">
                 <mat-icon>account_circle</mat-icon>
@@ -20,8 +20,10 @@
         <mat-form-field>
             <textarea matInput [(ngModel)]="currentMessage" placeholder="Write your message here"></textarea>
         </mat-form-field>
-        <button mat-fab color="primary" (click)="send()">
-            <mat-icon>send</mat-icon>
-        </button>
+        <div class="btn-aligner">
+            <button mat-fab color="primary" (click)="send()">
+                <mat-icon>send</mat-icon>
+            </button>
+        </div>
     </div>
 </div>

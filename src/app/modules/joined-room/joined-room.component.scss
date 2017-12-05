@@ -10,6 +10,10 @@
 
     app-chat-box {
         flex-grow: 2;
+        max-width: 70rem;
+        border: 1px solid;
+        margin: 0 auto;
+        background-color: #424242;
     }
 }
 

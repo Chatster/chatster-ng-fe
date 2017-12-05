@@ -1,4 +1,4 @@
-import { EventEmitter, Component, OnInit, Input, Output } from '@angular/core';
+import { EventEmitter, Component, OnInit, Input, Output, ViewChild, ElementRef } from '@angular/core';
 
 import { Message } from '../../../x-shared/entities/Message.entity';
 
@@ -17,12 +17,16 @@ export class ChatBoxComponent implements OnInit {
     @Input() public receiverUsername: string;
 
     @Output() public sendMessage: EventEmitter<Message> = new EventEmitter();
+    @ViewChild('messagesBox') public messagesBox: ElementRef;
 
     constructor() { }
 
     ngOnInit() {
     }
 
+    public scrollDown() {
+        this.messagesBox.nativeElement.scrollTop = this.messagesBox.nativeElement.scrollHeight;
+    }
 
     public send() {
         if (!this.currentMessage || !this.currentMessage.trim().length) {
@@ -42,5 +46,7 @@ export class ChatBoxComponent implements OnInit {
 
         this.sendMessage.emit(newMessage);
         this.currentMessage = '';
+
+        setTimeout(() => this.scrollDown(), 10);
     }
 }

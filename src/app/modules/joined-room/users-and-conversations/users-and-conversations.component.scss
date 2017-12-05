@@ -4,23 +4,23 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+    background-color: #424242;
 
     .private-chats,
     .online-users {
         position: relative;
-        background-color: #fff;
         overflow-y: scroll;
         flex-grow: 1;
         min-height: 3.5rem;
     }
 
     mat-list-item {
-        color: #424242;
+        color: #eee;
         cursor: pointer;
         transition: background-color, opacity 120ms ease-in-out;
 
         &:hover:not(.is-active-conv){
-            background-color: #EEE;
+            background-color: rgba(255, 255, 255, 0.04);
             opacity: .8;
         }
         
@@ -33,7 +33,7 @@
 
     mat-list-item.is-active-conv{
         opacity: 1;
-        background-color: #E0E0E0;
+        background-color: #FF9100;
         // color: #fff;
         h4 {
             font-weight: bold;
@@ -41,6 +41,6 @@
     }
 
     mat-list-item.private-chat:not(.is-active-conv){
-        color: #333;
+        color: #BDBDBD;
     }
 }   

@@ -1,5 +1,5 @@
 import { ActivatedRoute } from '@angular/router';
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, ViewChild } from '@angular/core';
 
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
@@ -14,6 +14,7 @@ import { SocketEventType } from '../../x-shared/events/SocketEventType';
 
 import { BaseRoom } from '../../core/BaseRoom.core';
 import { HeaderBarService } from '../../services/header-bar.service';
+import { ChatBoxComponent } from './chat-box/chat-box.component';
 
 @Component({
     selector: 'app-joined-room',
@@ -63,6 +64,7 @@ export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
     public receiverUsername: string;
     public receiverSockId: string;
 
+    @ViewChild(ChatBoxComponent) public chatBoxComponent: ChatBoxComponent;
     constructor(
         private route: ActivatedRoute,
         private headerBarService: HeaderBarService,
@@ -126,7 +128,7 @@ export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
             .push(message);
 
         if (message.toSockId !== this.activeConversation.sockId) {
-            //  It's not the current active chat view, set a notification next to the username
+            //  It's not the current active chat view that is receiving the message
             return;
         }
 
@@ -143,7 +145,9 @@ export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
                 .messages
                 .push(answer);
 
-        }, 500);
+            setTimeout(() => this.chatBoxComponent.scrollDown(), 10);
+
+        }, 3000);
     }
 
     private setFirstPrivateConversationToLobby() {

@@ -16,13 +16,13 @@
         padding-bottom: 1rem;
         
         .message {
-            // min-height: 3rem;
-            // overflow: hidden;
-            // margin-bottom: .5rem;
             margin: 0 auto;
             width: 90%;
             max-width: 70rem;
-            border-bottom: 1px solid #E0E0E0;
+            .message-text {
+                color: #BDBDBD;
+                font-size: 1.3rem;
+            }
         }
 
         .sender-info {
@@ -31,14 +31,17 @@
             min-width: 7rem;
 
             mat-icon {
+                color: #FF9100;
                 display: inline-block;
                 width: 3rem;
                 height: 3rem;
                 font-size: 3rem;
             }
             h5 {
+                color: #FF9100;
                 padding: 0;
                 line-height: 3rem;
+                margin-left: 1rem;  
                 font-weight: bold;    
             }
         }
@@ -51,22 +54,19 @@
             .sender-info {
                 text-align: left;
             }
-
-            background-color: #FFECB3;
-            // flex-flow: row-reverse;
         }
     }
 
     .message-compose {
         padding-top: 1rem;
-        border-top: 1px solid #E0E0E0;
+        border-top: 1px solid #333;
         flex-grow: 1;
         
         display: flex;
         flex-direction: row;
         justify-content: space-between;
-        padding-left: .5rem;
-        padding-right: .5rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
         
         mat-form-field {
             width: 98%;
@@ -75,12 +75,21 @@
             textarea {
                 height: 7rem;
                 resize: none;
+                color: #BDBDBD;
+                font-size: 1.3rem;
             }
         }
 
-        button {
-            margin-right: .5rem;
-            margin-left: .5rem;
+        .btn-aligner {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            
+            button {
+                margin-right: .5rem;
+                margin-left: .5rem;
+                
+            }
         }
     }
 }
