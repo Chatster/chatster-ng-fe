@@ -1,4 +1,5 @@
 export class SocketUser {
-    public socket: SocketIOClient.Socket;
+    public socketId: string;
     public username: string;
+    public isFake?: boolean;
 }

@@ -1,5 +1,5 @@
-<div class="row">
-    <div class="col-md-12 col-lg-4 room" *ngFor="let room of rooms">
+<div class="rooms">
+    <div class="room" *ngFor="let room of rooms">
         <app-room [room]="room" (joinRoom)="joinRoom($event)"></app-room>
     </div>
 </div>

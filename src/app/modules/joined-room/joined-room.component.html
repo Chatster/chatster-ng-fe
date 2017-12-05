@@ -1,11 +1,6 @@
-<div class="container-fluid">
-    <div class="main-section">
-        <div class="main-section-top">
-            <div></div>
-            <div class="top-ad-wrp"></div>
-        </div>
-    </div>
-    <div class="side-banner">
-        <div></div>
-    </div>
+<div class="common-wrapper">
+    <app-users-and-conversations (newPrivateChat)="onNewPrivateChat($event)" (openPrivateChat)="onOpenPrivateChat($event)" (closePrivateChat)="onClosePrivateChat($event)"
+        [onlineUsers]="onlineUsers" [conversations]="conversations"></app-users-and-conversations>
+    <app-chat-box [mySockId]="mySockId" [receiverSockId]="activeConversation.sockId" [messages]="activeConversation.messages"
+        [myUsername]="null" [receiverUsername]="receiverUsername" (sendMessage)="onMessageSend($event)"></app-chat-box>
 </div>

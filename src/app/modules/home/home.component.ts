@@ -1,18 +1,21 @@
-import { Component, OnInit } from '@angular/core';
 import * as io from 'socket.io-client';
 
-import { RoomsListDTO } from '../../x-shared/dtos/RoomsList.dto';
-import { SocketEventType } from '../../x-shared/events/SocketEventType';
-import { RoomDTO } from '../../x-shared/dtos/Room.dto';
-import { BaseRoom } from '../../core/BaseRoom.core';
 import { Router } from '@angular/router';
+import { Component } from '@angular/core';
+
+import { RoomDTO } from '../../x-shared/dtos/Room.dto';
+import { RoomsListDTO } from '../../x-shared/dtos/RoomsList.dto';
+
+import { SocketEventType } from '../../x-shared/events/SocketEventType';
+
+import { BaseRoom } from '../../core/BaseRoom.core';
 
 @Component({
     selector: 'app-home',
     templateUrl: './home.component.html',
     styleUrls: ['./home.component.scss']
 })
-export class HomeComponent extends BaseRoom implements OnInit {
+export class HomeComponent extends BaseRoom {
     public rooms: RoomDTO[] = [];
 
     constructor(
@@ -27,12 +30,8 @@ export class HomeComponent extends BaseRoom implements OnInit {
         this.socket.emit(SocketEventType.room.requestList);
 
         this.socket.on(SocketEventType.room.responseList, (data: RoomsListDTO) => {
-            console.log(this.rooms);
             this.rooms = data.rooms;
         });
-    }
-
-    public ngOnInit() {
     }
 
     public joinRoom(room: RoomDTO) {

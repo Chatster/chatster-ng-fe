@@ -7,7 +7,7 @@ export abstract class BaseRoom {
     protected mainSocketAddress = 'localhost:4000/';
 
     protected appendToMainSocketAddress(roomId: string) {
-        return this.mainSocketAddress += roomId;
+        return this.mainSocketAddress + roomId;
     }
 
     /**

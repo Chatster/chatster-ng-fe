@@ -1,4 +1,4 @@
-import { EventEmitter, Input, Output, Component, OnInit } from '@angular/core';
+import { EventEmitter, Input, Output, Component } from '@angular/core';
 import { RoomDTO } from '../../x-shared/dtos/Room.dto';
 
 @Component({
@@ -6,17 +6,11 @@ import { RoomDTO } from '../../x-shared/dtos/Room.dto';
     templateUrl: './room.component.html',
     styleUrls: ['./room.component.scss']
 })
-export class RoomComponent implements OnInit {
+export class RoomComponent {
     @Input() public room: RoomDTO;
     @Output() public joinRoom: EventEmitter<RoomDTO> = new EventEmitter();
-    constructor() { }
-
-    ngOnInit() {
-        console.log(this.room.name);
-    }
 
     public joinThisRoom() {
         this.joinRoom.emit(this.room);
     }
-
 }

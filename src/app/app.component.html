@@ -1,13 +1,12 @@
-<div class="container-fluid">
-    <div class="toolbar">
-        <mat-toolbar color="primary">
-            <mat-toolbar-row>
-                <span (click)="goHome()" class="app-name">Chatster </span>
-                <span *ngIf="joinedRoomName" class="joined-room">Joined {{joinedRoomName}} </span>
-            </mat-toolbar-row>
-        </mat-toolbar>
-    </div>
-    <div class="content">
+<div class="app-container">
+    <mat-toolbar color="primary">
+        <mat-toolbar-row>
+            <span (click)="goHome()" class="app-name">Chatster </span>
+            <span *ngIf="joinedRoomName" class="joined-room">Joined {{joinedRoomName}} </span>
+        </mat-toolbar-row>
+    </mat-toolbar>
+
+    <div class="router-outlet">
         <router-outlet></router-outlet>
     </div>
 </div>
