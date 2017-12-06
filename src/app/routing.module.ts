@@ -6,7 +6,7 @@ import { JoinedRoomComponent } from './modules/joined-room/joined-room.component
 
 const appRoutes: Routes = [
     { path: 'home', component: HomeComponent },
-    { path: 'room/:id', component: JoinedRoomComponent },
+    { path: 'room/:id/:username', component: JoinedRoomComponent },
 
     { path: '**', component: HomeComponent }
 ];

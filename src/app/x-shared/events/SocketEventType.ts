@@ -17,6 +17,7 @@ class SocketRoomEvents {
     public requestList = 'rooms.request.list';
     public responseList = 'rooms.response.list';
 
+    //  Deprecated
     public roomData = 'room.data';
 }
 

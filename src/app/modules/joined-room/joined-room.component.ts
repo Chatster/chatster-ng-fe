@@ -15,6 +15,7 @@ import { SocketEventType } from '../../x-shared/events/SocketEventType';
 import { BaseRoom } from '../../core/BaseRoom.core';
 import { HeaderBarService } from '../../services/header-bar.service';
 import { ChatBoxComponent } from './chat-box/chat-box.component';
+import { ClientRegistrationDTO } from '../../x-shared/dtos/ClientRegistration.dto';
 
 @Component({
     selector: 'app-joined-room',
@@ -23,6 +24,7 @@ import { ChatBoxComponent } from './chat-box/chat-box.component';
 })
 export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
     private id: string;
+    private username: string;
 
     public isAlive = true;
     public mySockId: string;
@@ -32,31 +34,7 @@ export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
             username: 'All',
             socketId: null,
             isFake: true
-        },
-        {
-            username: 'Mandy',
-            socketId: 'mnd'
-        },
-        {
-            username: 'Peter',
-            socketId: 'ptr'
-        },
-        {
-            username: 'Chester',
-            socketId: 'csr'
-        },
-        {
-            username: 'Jimmy',
-            socketId: 'jmy'
-        },
-        {
-            username: 'Connor',
-            socketId: 'cnr'
-        },
-        {
-            username: 'Hailey',
-            socketId: 'hly'
-        },
+        }
     ];
 
     public conversations: Conversation[] = [];
@@ -75,6 +53,7 @@ export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
             .takeWhile(() => this.isAlive)
             .subscribe(params => {
                 this.id = params['id'];
+                this.username = params['username'];
                 this.onlineUsers[0].socketId = this.appendToMainSocketAddress(this.id);
                 this.setFirstPrivateConversationToLobby();
                 this.connectToSocket(this.appendToMainSocketAddress(this.id));
@@ -189,8 +168,18 @@ export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
     //  Base class implementation
     protected onConnectionEstablished(): void {
         this.mySockId = this.socket.id;
-        this.socket.on(SocketEventType.room.roomData, (data: RoomDTO) => {
+
+        const clientRegistrationDTO = new ClientRegistrationDTO();
+        clientRegistrationDTO.username = this.username;
+        this.socket.emit(SocketEventType.client.registration, clientRegistrationDTO);
+
+        this.socket.on(SocketEventType.client.registered, (data: RoomDTO) => {
+            this.onlineUsers = data.users;
             this.headerBarService.setJoinedRoom(data.name);
+        });
+
+        this.socket.on(SocketEventType.client.connected, (data: RoomDTO) => {
+            this.onlineUsers = data.users.filter(usr => usr.socketId !== this.socket.id);
         });
     }
 
