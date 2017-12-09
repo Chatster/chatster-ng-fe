@@ -15,8 +15,8 @@ export class UsersAndConversationsComponent {
     @Input() public onlineUsers: SocketUser[];
 
     @Output() public newPrivateChat: EventEmitter<SocketUser> = new EventEmitter();
-    @Output() public openPrivateChat: EventEmitter<Conversation> = new EventEmitter();
     @Output() public closePrivateChat: EventEmitter<Conversation> = new EventEmitter();
+    @Output() public restorePrivateChatFocus: EventEmitter<Conversation> = new EventEmitter();
 
     constructor() { }
 
@@ -28,8 +28,8 @@ export class UsersAndConversationsComponent {
         this.newPrivateChat.emit(withUser);
     }
 
-    public emitPrivateChatOpenRequest(conversation: Conversation) {
-        this.openPrivateChat.emit(conversation);
+    public emitPrivateChatRestoreRequest(conversation: Conversation) {
+        this.restorePrivateChatFocus.emit(conversation);
     }
 
     public emitPrivateChatCloseRequest(event: MouseEvent, conversation: Conversation) {

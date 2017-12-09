@@ -6,6 +6,9 @@ class SocketClientEvents {
 
     public disconnect = 'client.disconnect';
     public disconnected = 'client.disconnected';
+
+    public chatRequest = 'client.chat.request';
+    public chatRequestResponse = 'client.chat-request.response';
 }
 
 class SocketMessageEvents {
@@ -23,6 +26,7 @@ class SocketRoomEvents {
 
 export class SocketEventType {
     public static connection = 'connection';
+    public static disconnect = 'disconnect';
     public static client = new SocketClientEvents();
     public static message = new SocketMessageEvents();
     public static room = new SocketRoomEvents();

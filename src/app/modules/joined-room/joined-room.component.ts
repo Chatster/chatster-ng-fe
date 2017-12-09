@@ -1,10 +1,14 @@
 import { ActivatedRoute } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 import { Component, OnDestroy, ViewChild } from '@angular/core';
 
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 import { RoomDTO } from '../../x-shared/dtos/Room.dto';
+import { ChatRequestDTO } from '../../x-shared/dtos/ChatRequest.dto';
 import { RoomJoinRequestDTO } from '../../x-shared/dtos/RoomJoinRequest.dto';
+import { ClientRegistrationDTO } from '../../x-shared/dtos/ClientRegistration.dto';
+import { ChatRequestResponseDTO } from '../../x-shared/dtos/ChatRequestResponse.dto';
 
 import { Message } from '../../x-shared/entities/Message.entity';
 import { SocketUser } from '../../x-shared/entities/SocketUser.entity';
@@ -12,10 +16,11 @@ import { Conversation } from '../../x-shared/entities/Conversation.entity';
 
 import { SocketEventType } from '../../x-shared/events/SocketEventType';
 
+import { ChatBoxComponent } from './chat-box/chat-box.component';
+import { ChatRequestDialogComponent } from './chat-request-dialog/chat-request-dialog.component';
+
 import { BaseRoom } from '../../core/BaseRoom.core';
 import { HeaderBarService } from '../../services/header-bar.service';
-import { ChatBoxComponent } from './chat-box/chat-box.component';
-import { ClientRegistrationDTO } from '../../x-shared/dtos/ClientRegistration.dto';
 
 @Component({
     selector: 'app-joined-room',
@@ -44,6 +49,7 @@ export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
 
     @ViewChild(ChatBoxComponent) public chatBoxComponent: ChatBoxComponent;
     constructor(
+        public dialog: MatDialog,
         private route: ActivatedRoute,
         private headerBarService: HeaderBarService,
     ) {
@@ -66,7 +72,7 @@ export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
         this.disconnectFromSocket();
     }
 
-    public onOpenPrivateChat(conv: Conversation) {
+    public onRestorePrivateChatFocus(conv: Conversation) {
         this.deactivateAllConversations();
         this.activateConversation(conv.sockId);
     }
@@ -89,7 +95,21 @@ export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
             return;
         }
 
+        if (user.isFake) {
+            this.addConversationInList(user);
+            return;
+        }
+
         //  Need to send request to user first
+        const requestDTO = new ChatRequestDTO();
+        requestDTO.toSockId = user.socketId;
+        requestDTO.fromSockId = this.mySockId;
+
+        this.addConversationInList(user);
+        this.notifyBackUserOnRequestResponse(requestDTO);
+    }
+
+    private addConversationInList(user: SocketUser) {
         const newConv: Conversation = {
             messages: [],
             with: user.username,
@@ -129,6 +149,18 @@ export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
         }, 3000);
     }
 
+    private notifyBackUserOnRequestResponse(requestDTO: ChatRequestDTO) {
+        this.socket.emit(SocketEventType.client.chatRequest, requestDTO);
+        this.socket.on(SocketEventType.client.chatRequestResponse, (data: ChatRequestResponseDTO) => {
+            if (!data.accepted) {
+                console.log('The user refused the chat');
+                return;
+            }
+
+            console.log('The user has accepted the chat request');
+        });
+    }
+
     private setFirstPrivateConversationToLobby() {
         const lobbyConv = new Conversation();
         lobbyConv.with = 'All';
@@ -161,7 +193,12 @@ export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
 
             //  Update receiver data
             this.receiverSockId = sockId;
-            this.receiverUsername = this.onlineUsers.find(usr => usr.socketId === sockId).username;
+            if (sockId !== this.conversations[0].sockId) {
+                this.receiverUsername = this.onlineUsers.find(usr => usr.socketId === sockId).username;
+                return;
+            }
+
+            this.receiverUsername = this.conversations[0].with;
         }
     }
 
@@ -180,6 +217,29 @@ export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
 
         this.socket.on(SocketEventType.client.connected, (data: RoomDTO) => {
             this.onlineUsers = data.users.filter(usr => usr.socketId !== this.socket.id);
+        });
+
+        this.socket.on(SocketEventType.client.chatRequest, (data: ChatRequestDTO) => {
+            const userThatWantsToChat = this.onlineUsers.find(usr => usr.socketId === data.fromSockId).username;
+            const dialogRef = this.dialog.open(ChatRequestDialogComponent, { disableClose: false, data: { user: userThatWantsToChat } });
+
+            dialogRef.afterClosed().subscribe(result => {
+                const responseDTO = new ChatRequestResponseDTO();
+
+                responseDTO.accepted = true;
+                responseDTO.toSockId = data.toSockId;
+                responseDTO.fromSockId = data.fromSockId;
+
+                if (!result || !result.accepted) {
+                    responseDTO.accepted = false;
+                } else {
+                    this.addConversationInList(this.onlineUsers.find(usr => usr.socketId === data.fromSockId));
+                    this.deactivateAllConversations();
+                    this.activateConversation(data.fromSockId);
+                }
+
+                this.socket.emit(SocketEventType.client.chatRequestResponse, responseDTO);
+            });
         });
     }
 

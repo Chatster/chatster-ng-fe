@@ -2,7 +2,7 @@
     <h3 mat-subheader>Private Chats</h3>
     <div class="private-chats">
         <mat-list-item *ngFor="let conv of conversations" class="private-chat" [ngClass]="{'is-active-conv': conv.isCurrentActive}"
-            (click)="emitPrivateChatOpenRequest(conv)">
+            (click)="emitPrivateChatRestoreRequest(conv)">
             <mat-icon mat-list-icon *ngIf="!conv.cannotBeClosed">account_circle</mat-icon>
             <mat-icon mat-list-icon *ngIf="conv.cannotBeClosed">people</mat-icon>
             <h4 mat-line>{{conv.with}}</h4>

@@ -8,6 +8,7 @@ import { JoinedRoomComponent } from './joined-room.component';
 import { ChatBoxComponent } from './chat-box/chat-box.component';
 import { UsersAndConversationsComponent } from './users-and-conversations/users-and-conversations.component';
 import { NewMessagesPipe } from '../../pipes/new-messages.pipe';
+import { ChatRequestDialogComponent } from './chat-request-dialog/chat-request-dialog.component';
 
 @NgModule({
     imports: [
@@ -21,7 +22,11 @@ import { NewMessagesPipe } from '../../pipes/new-messages.pipe';
 
         ChatBoxComponent,
         JoinedRoomComponent,
+        ChatRequestDialogComponent,
         UsersAndConversationsComponent,
+    ],
+    entryComponents: [
+        ChatRequestDialogComponent
     ],
     providers: [
     ]
