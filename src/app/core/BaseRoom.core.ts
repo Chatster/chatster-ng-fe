@@ -4,7 +4,8 @@ import { SocketEventType } from '../x-shared/events/SocketEventType';
 
 export abstract class BaseRoom {
     protected socket: SocketIOClient.Socket;
-    protected mainSocketAddress = 'localhost:4000/';
+    // protected mainSocketAddress = 'localhost:4000/';
+    protected mainSocketAddress = 'https://chatster-be.herokuapp.com/';
 
     protected appendToMainSocketAddress(roomId: string) {
         return this.mainSocketAddress + roomId;
