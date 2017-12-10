@@ -37,7 +37,7 @@ export class ChatBoxComponent implements OnInit {
         newMessage.fromMe = true;
         newMessage.text = this.currentMessage;
 
-        newMessage.fromUsername = null;
+        newMessage.fromUsername = this.myUsername;
         newMessage.fromSockId = this.mySockId;
 
         newMessage.toSockId = this.receiverSockId;

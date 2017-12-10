@@ -7,4 +7,5 @@ export class Conversation {
     ignoredByReceiver?: boolean;
     isCurrentActive: boolean;
     cannotBeClosed?: boolean;
+    isInvisible?: boolean;
 }

@@ -7,13 +7,16 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 import { RoomDTO } from '../../x-shared/dtos/Room.dto';
 import { ChatRequestDTO } from '../../x-shared/dtos/ChatRequest.dto';
+import { MessageSendDTO } from '../../x-shared/dtos/MessageSend.dto';
 import { RoomJoinRequestDTO } from '../../x-shared/dtos/RoomJoinRequest.dto';
 import { ClientRegistrationDTO } from '../../x-shared/dtos/ClientRegistration.dto';
+import { NewMessageReceivedDTO } from '../../x-shared/dtos/NewMessageReceived.dto';
 import { ChatRequestResponseDTO } from '../../x-shared/dtos/ChatRequestResponse.dto';
 
 import { Message } from '../../x-shared/entities/Message.entity';
 import { SocketUser } from '../../x-shared/entities/SocketUser.entity';
 import { Conversation } from '../../x-shared/entities/Conversation.entity';
+import { ChatApproval } from '../../x-shared/entities/ChatApproval.entity';
 
 import { SocketEventType } from '../../x-shared/events/SocketEventType';
 
@@ -22,6 +25,7 @@ import { ChatRequestDialogComponent } from './chat-request-dialog/chat-request-d
 
 import { BaseRoom } from '../../core/BaseRoom.core';
 import { HeaderBarService } from '../../services/header-bar.service';
+import { MessageColors } from '../../x-shared/enums/MessageColors.enum';
 
 @Component({
     selector: 'app-joined-room',
@@ -31,6 +35,7 @@ import { HeaderBarService } from '../../services/header-bar.service';
 export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
     private id: string;
     private username: string;
+    private pendingChatsApprovals: ChatApproval[] = [];
 
     public isAlive = true;
     public mySockId: string;
@@ -97,7 +102,9 @@ export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
             return;
         }
 
-        if (this.conversations.find(conv => conv.sockId === user.socketId)) {
+        const conv = this.conversations.find(conv => conv.sockId === user.socketId);
+        if (!!conv) {
+            conv.isInvisible = false;   //  If the conv where invisible, set it visible forcefully
             this.activateConversation(user.socketId);
             return;
         }
@@ -113,65 +120,60 @@ export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
         requestDTO.fromSockId = this.mySockId;
 
         this.addConversationInList(user);
-        this.notifyBackUserOnRequestResponse(requestDTO);
+        this.socket.emit(SocketEventType.client.chatRequest, requestDTO);
     }
 
-    private addConversationInList(user: SocketUser) {
+    private addConversationInList(user: SocketUser, silentActivation?: boolean) {
         const newConv: Conversation = {
             messages: [],
             with: user.username,
             sockId: user.socketId,
-            isCurrentActive: true,
+            isInvisible: silentActivation,
+            isCurrentActive: silentActivation ? false : true,
         };
 
-        this.conversations.push(newConv);
-        this.activateConversation(user.socketId);
+        //  If the conversation already exists, don't duplicate it.
+        if (!this.conversations.find(conv => conv.sockId === newConv.sockId)) {
+            this.conversations.push(newConv);
+        }
+
+        //  If silentActivation is on, it means that the conv is still in an approval phase.
+        //  But adding the conv to the convs list, will allow us to collect the messages even if the conv is not visible
+        if (!silentActivation) {
+            this.deactivateAllConversations();
+            this.activateConversation(user.socketId);
+        }
     }
 
     public onMessageSend(message: Message) {
-        this.conversations.find(conv => conv.sockId === message.toSockId)
-            .messages
-            .push(message);
+        const user = this.onlineUsers.find(usr => usr.socketId === message.toSockId);
+        if (!!user) {
+            const messageDTO = new MessageSendDTO();
+            messageDTO.fromSockId = message.fromSockId;
+            messageDTO.toSockId = message.toSockId;
+            messageDTO.fromUsername = message.fromUsername;
+            messageDTO.toUsername = message.toUsername;
+            messageDTO.message = message.text;
 
-        if (message.toSockId !== this.activeConversation.sockId) {
-            //  It's not the current active chat view that is receiving the message
-            return;
+            this.socket.emit(SocketEventType.message.send, messageDTO);
         }
 
-        //  TODO remove [Fake answer from server]
-        setTimeout(() => {
-            const answer = new Message();
-            answer.fromSockId = message.toSockId;
-            answer.fromUsername = message.toUsername;
-            answer.toSockId = message.fromSockId;
-            answer.text = `Default answer to: "${message.text}"`;
-            answer.isNewMessage = this.activeConversation.sockId === answer.fromSockId ? false : true;
-
-            this.conversations.find(conv => conv.sockId === message.toSockId)
-                .messages
-                .push(answer);
-
-            setTimeout(() => this.chatBoxComponent.scrollDown(), 10);
-
-        }, 3000);
+        this.addMessageToConversationAndScrollDown(message, true);
     }
 
-    private notifyBackUserOnRequestResponse(requestDTO: ChatRequestDTO) {
-        this.socket.emit(SocketEventType.client.chatRequest, requestDTO);
-        this.socket.on(SocketEventType.client.chatRequestResponse, (data: ChatRequestResponseDTO) => {
-            const infoMessage = new Message();
-            if (!data.accepted) {
-                infoMessage.info = 'The user has ignored your private chat request';
-                this.onlineUsers.find(user => user.socketId === requestDTO.toSockId).isIgnoringYou = true;
-            } else {
-                infoMessage.info = 'The user has accepted your private chat request';
-            }
+    private getConversation(convSockId: string): Conversation | boolean {
+        const conv = this.conversations.find(conversation => conversation.sockId === convSockId);
 
-            this.conversations
-                .find(conv => conv.sockId === data.toSockId)
-                .messages
-                .push(infoMessage);
-        });
+        if (!conv) {
+            //  The current user has closed the chat with the other one
+            return false;
+        }
+
+        if (!conv.messages) {
+            conv.messages = [];
+        }
+
+        return conv;
     }
 
     private setFirstPrivateConversationToLobby() {
@@ -215,6 +217,65 @@ export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
         }
     }
 
+    private addMessageToConversationAndScrollDown(message: Message, invertSocketId?: boolean) {
+        const conv = this.conversations
+            .find(conversation => conversation.sockId === (invertSocketId ? message.toSockId : message.fromSockId));
+
+        if (!conv) { return; }
+        if (!conv.messages) {
+            conv.messages = [];
+        }
+
+        conv.messages.push(message);
+        setTimeout(() => this.chatBoxComponent.scrollDown(), 10);
+    }
+
+    private handleChatRequest(data: ChatRequestDTO) {
+        const userThatWantsToChat = this.onlineUsers.find(usr => usr.socketId === data.fromSockId);
+
+        if (this.onlineUsers.find(usr => usr.socketId === userThatWantsToChat.socketId).ignoreChatRequests) {
+            //  This user already tried to chat with the current one. And the user has ignored him.
+            //  So don't bother him with other requests from the same user.
+            return;
+        }
+
+        //  Silently add the conversation to the list.
+        //  (in this way when the user approves, all the messages sent by the other side will be present)
+        this.addConversationInList(this.onlineUsers.find(usr => usr.socketId === data.fromSockId), true);
+
+        //  If is the same user sending a new message again, and the user hasn't approved yet the chat request, skip the dialog
+        //  When the user will approve the first one, all the messages will be available too.
+        if (this.pendingChatsApprovals.find(pca => pca.fromSockId === data.fromSockId)) { return; }
+        this.pendingChatsApprovals.push({ fromSockId: data.fromSockId });
+
+        const dialogRef = this.dialog
+            .open(ChatRequestDialogComponent, { disableClose: false, data: { user: userThatWantsToChat.username } });
+
+        dialogRef
+            .afterClosed()
+            .subscribe(result => {
+                const responseDTO = new ChatRequestResponseDTO();
+
+                responseDTO.accepted = true;
+                responseDTO.toSockId = data.toSockId;
+                responseDTO.fromSockId = data.fromSockId;
+
+                if (!result || !result.accepted) {
+                    responseDTO.accepted = false;
+                    this.onlineUsers.find(usr => usr.socketId === data.fromSockId).ignoreChatRequests = true;
+                } else {
+                    //  This time we add the conversation again, which won't duplicate the entry, but we'll activate the previous one
+                    //  But we first have to uncheck it as 'ivisible'
+                    this.conversations.find(conv => conv.sockId === data.fromSockId).isInvisible = false;
+                    this.addConversationInList(this.onlineUsers.find(usr => usr.socketId === data.fromSockId));
+                    //  remove the pending chat approval only if the user accepts it
+                    this.pendingChatsApprovals = this.pendingChatsApprovals.filter(pca => pca.fromSockId !== data.fromSockId);
+                }
+
+                this.socket.emit(SocketEventType.client.chatRequestResponse, responseDTO);
+            });
+    }
+
     //  Base class implementation
     protected onConnectionEstablished(): void {
         this.mySockId = this.socket.id;
@@ -233,38 +294,45 @@ export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
         });
 
         this.socket.on(SocketEventType.client.chatRequest, (data: ChatRequestDTO) => {
-            const userThatWantsToChat = this.onlineUsers.find(usr => usr.socketId === data.fromSockId);
+            this.handleChatRequest(data);
+        });
 
-            if (this.onlineUsers.find(usr => usr.socketId === userThatWantsToChat.socketId).ignoreChatRequests) {
-                //  This user already tried to chat with the current one. And the user has ignored him.
-                //  So don't bother him with other requests from the same user.
-                return;
+        this.socket.on(SocketEventType.client.chatRequestResponse, (data: ChatRequestResponseDTO) => {
+            const infoMessage = new Message();
+            if (!data.accepted) {
+                infoMessage.info = 'The user has declined your chat request. Further messages wont\'t be delivered';
+                infoMessage.infoColor = MessageColors.red;
+
+                this.onlineUsers.find(user => user.socketId === data.toSockId).isIgnoringYou = true;
+            } else {
+                infoMessage.info = 'The user has accepted your private chat request';
+                infoMessage.infoColor = MessageColors.green;
             }
 
-            const dialogRef = this.dialog
-                .open(ChatRequestDialogComponent, { disableClose: false, data: { user: userThatWantsToChat.username } });
 
-            dialogRef
-                .afterClosed()
-                .subscribe(result => {
-                    const responseDTO = new ChatRequestResponseDTO();
+            if (this.getConversation(data.toSockId)) {
+                (this.getConversation(data.toSockId) as Conversation).messages.push(infoMessage);
+            }
+        });
 
-                    responseDTO.accepted = true;
-                    responseDTO.toSockId = data.toSockId;
-                    responseDTO.fromSockId = data.fromSockId;
+        this.socket.on(SocketEventType.message.newMessage, (data: NewMessageReceivedDTO) => {
+            if (!this.conversations.find(conv => conv.sockId === data.fromSockId)) {
+                //  If the current user has closed the private chat with the one who sent the message,
+                //  Re present the new private chat dialog
+                const chatRequestDTO = new ChatRequestDTO();
+                chatRequestDTO.fromSockId = data.fromSockId;
+                chatRequestDTO.toSockId = data.toSockId;
+                this.handleChatRequest(chatRequestDTO);
+            }
 
-                    if (!result || !result.accepted) {
-                        responseDTO.accepted = false;
-                        this.onlineUsers.find(usr => usr.socketId === data.fromSockId).ignoreChatRequests = true;
-                    } else {
-                        this.addConversationInList(this.onlineUsers.find(usr => usr.socketId === data.fromSockId));
-                        this.deactivateAllConversations();
-                        this.activateConversation(data.fromSockId);
-                    }
+            const answer = new Message();
+            answer.fromSockId = data.fromSockId;
+            answer.fromUsername = data.fromUsername;
+            answer.toSockId = data.toSockId;
+            answer.text = data.message;
+            answer.isNewMessage = this.activeConversation.sockId === answer.fromSockId ? false : true;
 
-                    this.socket.emit(SocketEventType.client.chatRequestResponse, responseDTO);
-                });
+            this.addMessageToConversationAndScrollDown(answer);
         });
     }
-
 }

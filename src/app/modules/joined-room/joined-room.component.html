@@ -2,5 +2,5 @@
     <app-users-and-conversations (newPrivateChat)="onNewPrivateChat($event)" (restorePrivateChatFocus)="onRestorePrivateChatFocus($event)"
         (closePrivateChat)="onClosePrivateChat($event)" [onlineUsers]="onlineUsers" [conversations]="conversations"></app-users-and-conversations>
     <app-chat-box [mySockId]="mySockId" [receiverSockId]="activeConversation.sockId" [messages]="activeConversation.messages"
-        [myUsername]="null" [receiverUsername]="receiverUsername" (sendMessage)="onMessageSend($event)"></app-chat-box>
+        [myUsername]="username" [receiverUsername]="receiverUsername" (sendMessage)="onMessageSend($event)"></app-chat-box>
 </div>

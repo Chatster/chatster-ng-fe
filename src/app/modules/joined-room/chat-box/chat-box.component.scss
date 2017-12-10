@@ -22,10 +22,17 @@
             .message-text {
                 color: #BDBDBD;
                 font-size: 1.3rem;
+                padding-left: 1.5rem;
             }
             .message-info {
                 color: #FF9100;
                 font-size: 1.1rem;
+                &.info-green {
+                    color: #4CAF50;
+                }
+                &.info-red {
+                    color: #F44336;
+                }
             }
         }
 

@@ -3,11 +3,11 @@
     <div class="private-chats">
         <mat-list-item *ngFor="let conv of conversations" class="private-chat" [ngClass]="{'is-active-conv': conv.isCurrentActive}"
             (click)="emitPrivateChatRestoreRequest(conv)">
-            <mat-icon mat-list-icon *ngIf="!conv.cannotBeClosed">account_circle</mat-icon>
-            <mat-icon mat-list-icon *ngIf="conv.cannotBeClosed">people</mat-icon>
-            <h4 mat-line>{{conv.with}}</h4>
-            <mat-icon class="new-message-notification" *ngIf="newMessages(conv.messages)">fiber_manual_record</mat-icon>
-            <mat-icon *ngIf="!conv.cannotBeClosed" (click)="emitPrivateChatCloseRequest($event, conv)">close</mat-icon>
+            <mat-icon mat-list-icon *ngIf="!conv.cannotBeClosed && !conv.isInvisible">account_circle</mat-icon>
+            <mat-icon mat-list-icon *ngIf="conv.cannotBeClosed  && !conv.isInvisible">people</mat-icon>
+            <h4 mat-line *ngIf="!conv.isInvisible">{{conv.with}}</h4>
+            <mat-icon class="new-message-notification" *ngIf="newMessages(conv.messages) && !conv.isInvisible">fiber_manual_record</mat-icon>
+            <mat-icon *ngIf="!conv.cannotBeClosed && !conv.isInvisible" (click)="emitPrivateChatCloseRequest($event, conv)">close</mat-icon>
         </mat-list-item>
     </div>
     <mat-divider></mat-divider>
