@@ -34,11 +34,11 @@ import { MessageColors } from '../../x-shared/enums/MessageColors.enum';
 })
 export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
     private id: string;
-    private username: string;
     private pendingChatsApprovals: ChatApproval[] = [];
 
     public isAlive = true;
     public mySockId: string;
+    public username: string;
 
     public onlineUsers: SocketUser[] = [
         {
