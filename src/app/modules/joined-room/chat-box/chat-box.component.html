@@ -1,18 +1,22 @@
 <div class="wrapper">
     <div class="messages-box" #messagesBox>
         <mat-card class="message" *ngFor="let message of messages" [ngClass]="{'is-from-me': message.fromMe}">
-            <mat-card-header class="sender-info">
+
+            <mat-card-header class="sender-info" *ngIf="!message.info">
                 <mat-icon>account_circle</mat-icon>
                 <h5>{{message.fromMe ? 'You' : message.fromUsername}}</h5>
             </mat-card-header>
-            <mat-divider></mat-divider>
-            <mat-card-content>
+            <mat-divider *ngIf="!message.info"></mat-divider>
+            <mat-card-content *ngIf="!message.info">
                 <p class="message-text">{{message.text}}</p>
             </mat-card-content>
-            <!-- <h5 *ngIf="message.fromMe">
-                <strong>You: </strong>{{message.text}}</h5>
-            <h5 *ngIf="!message.fromMe">
-                <strong>{{message.fromUsername}}: </strong>{{message.text}}</h5> -->
+
+            <!-- Info message -->
+            <mat-divider *ngIf="!message.info"></mat-divider>
+            <mat-card-content *ngIf="!!message.info">
+                <p class="message-info">{{message.info}}</p>
+            </mat-card-content>
+
         </mat-card>
     </div>
 

@@ -1,5 +1,6 @@
 import { ActivatedRoute } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Component, OnDestroy, ViewChild } from '@angular/core';
 
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
@@ -50,6 +51,7 @@ export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
     @ViewChild(ChatBoxComponent) public chatBoxComponent: ChatBoxComponent;
     constructor(
         public dialog: MatDialog,
+        public snackBar: MatSnackBar,
         private route: ActivatedRoute,
         private headerBarService: HeaderBarService,
     ) {
@@ -89,6 +91,11 @@ export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
 
     public onNewPrivateChat(user: SocketUser) {
         this.deactivateAllConversations();
+
+        if (user.isIgnoringYou) {
+            this.snackBar.open('This user is ignoring you.', null, { duration: 2000 });
+            return;
+        }
 
         if (this.conversations.find(conv => conv.sockId === user.socketId)) {
             this.activateConversation(user.socketId);
@@ -152,12 +159,18 @@ export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
     private notifyBackUserOnRequestResponse(requestDTO: ChatRequestDTO) {
         this.socket.emit(SocketEventType.client.chatRequest, requestDTO);
         this.socket.on(SocketEventType.client.chatRequestResponse, (data: ChatRequestResponseDTO) => {
+            const infoMessage = new Message();
             if (!data.accepted) {
-                console.log('The user refused the chat');
-                return;
+                infoMessage.info = 'The user has ignored your private chat request';
+                this.onlineUsers.find(user => user.socketId === requestDTO.toSockId).isIgnoringYou = true;
+            } else {
+                infoMessage.info = 'The user has accepted your private chat request';
             }
 
-            console.log('The user has accepted the chat request');
+            this.conversations
+                .find(conv => conv.sockId === data.toSockId)
+                .messages
+                .push(infoMessage);
         });
     }
 
@@ -211,7 +224,7 @@ export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
         this.socket.emit(SocketEventType.client.registration, clientRegistrationDTO);
 
         this.socket.on(SocketEventType.client.registered, (data: RoomDTO) => {
-            this.onlineUsers = data.users;
+            this.onlineUsers = data.users.filter(user => user.socketId !== this.socket.id);
             this.headerBarService.setJoinedRoom(data.name);
         });
 
@@ -220,26 +233,37 @@ export class JoinedRoomComponent extends BaseRoom implements OnDestroy {
         });
 
         this.socket.on(SocketEventType.client.chatRequest, (data: ChatRequestDTO) => {
-            const userThatWantsToChat = this.onlineUsers.find(usr => usr.socketId === data.fromSockId).username;
-            const dialogRef = this.dialog.open(ChatRequestDialogComponent, { disableClose: false, data: { user: userThatWantsToChat } });
+            const userThatWantsToChat = this.onlineUsers.find(usr => usr.socketId === data.fromSockId);
 
-            dialogRef.afterClosed().subscribe(result => {
-                const responseDTO = new ChatRequestResponseDTO();
+            if (this.onlineUsers.find(usr => usr.socketId === userThatWantsToChat.socketId).ignoreChatRequests) {
+                //  This user already tried to chat with the current one. And the user has ignored him.
+                //  So don't bother him with other requests from the same user.
+                return;
+            }
 
-                responseDTO.accepted = true;
-                responseDTO.toSockId = data.toSockId;
-                responseDTO.fromSockId = data.fromSockId;
+            const dialogRef = this.dialog
+                .open(ChatRequestDialogComponent, { disableClose: false, data: { user: userThatWantsToChat.username } });
 
-                if (!result || !result.accepted) {
-                    responseDTO.accepted = false;
-                } else {
-                    this.addConversationInList(this.onlineUsers.find(usr => usr.socketId === data.fromSockId));
-                    this.deactivateAllConversations();
-                    this.activateConversation(data.fromSockId);
-                }
+            dialogRef
+                .afterClosed()
+                .subscribe(result => {
+                    const responseDTO = new ChatRequestResponseDTO();
 
-                this.socket.emit(SocketEventType.client.chatRequestResponse, responseDTO);
-            });
+                    responseDTO.accepted = true;
+                    responseDTO.toSockId = data.toSockId;
+                    responseDTO.fromSockId = data.fromSockId;
+
+                    if (!result || !result.accepted) {
+                        responseDTO.accepted = false;
+                        this.onlineUsers.find(usr => usr.socketId === data.fromSockId).ignoreChatRequests = true;
+                    } else {
+                        this.addConversationInList(this.onlineUsers.find(usr => usr.socketId === data.fromSockId));
+                        this.deactivateAllConversations();
+                        this.activateConversation(data.fromSockId);
+                    }
+
+                    this.socket.emit(SocketEventType.client.chatRequestResponse, responseDTO);
+                });
         });
     }
 

@@ -1,6 +1,7 @@
 export class Message {
     text?: string;
     media?: any;
+    info?: string;
 
     fromUsername?: string;
     toUsername?: string;
